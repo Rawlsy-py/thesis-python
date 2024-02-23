@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "thesis-python-crud"
+version = "0.1.0"
+description = "FastAPI CRUD App for performance benchmarking"
+authors = ["Rawlsy-py <christopher_m_mitchell@live.co.uk>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "thesis_python_crud" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.2"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.2.2"
+
+[tool.ruff]
+select = ["ALL"]
+ignore = ["ANN101", "D407", "D413"]
+line-length = 250
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
