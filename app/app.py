@@ -1,1 +1,0 @@
-"""FastAPI CRUD Benchmarking App."""
