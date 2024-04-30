@@ -1,59 +1,54 @@
-"""FastAPI CRUD Benchmarking App."""
-
+# main.py
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
+# Database setup
+SQLALCHEMY_DATABASE_URL = "postgresql://username:password@postgres:5432/database"
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+# Model
+class MyModel(Base):
+    __tablename__ = "my_table"
+    id = Column(Integer, primary_key=True, index=True)
+    country_code = Column(String, index=True)
+    balance = Column(Float)
+
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+# FastAPI setup
 app = FastAPI()
 
 
-class User(BaseModel):
-    name: str
-    country_code: str = Field(..., min_length=2, max_length=2)
-    points_balance: int
+# Pydantic model for request body
+class UpdateBalance(BaseModel):
+    id: int
+    balance: float
 
 
-# In-memory "database"
-db: List[User] = []
+# Routes
+@app.get("/")
+async def get_data():
+    db = SessionLocal()
+    data = db.query(MyModel).limit(10).all()
+    db.close()
+    return data
 
 
-@app.post("/users/", response_model=User)
-def create_user(user: User):
-    db.append(user)
-    return user
-
-
-@app.get("/users/", response_model=List[User])
-def read_users():
-    return db
-
-
-@app.get("/users/{user_name}", response_model=User)
-def read_user(user_name: str):
-    for user in db:
-        if user.name == user_name:
-            return user
-    raise HTTPException(status_code=404, detail="User not found")
-
-
-@app.put("/users/{user_name}", response_model=User)
-def update_user(user_name: str, user_update: User):
-    for index, user in enumerate(db):
-        if user.name == user_name:
-            db[index] = user_update
-            return user_update
-    raise HTTPException(status_code=404, detail="User not found")
-
-
-@app.delete("/users/{user_name}", response_model=User)
-def delete_user(user_name: str):
-    for index, user in enumerate(db):
-        if user.name == user_name:
-            return db.pop(index)
-    raise HTTPException(status_code=404, detail="User not found")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+@app.post("/update-balance")
+async def update_balance(balance_info: UpdateBalance):
+    db = SessionLocal()
+    row = db.query(MyModel).filter(MyModel.id == balance_info.id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Row not found")
+    row.balance = balance_info.balance
+    db.commit()
+    db.close()
+    return {"message": "Balance updated successfully"}
