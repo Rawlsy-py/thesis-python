@@ -5,23 +5,22 @@ description = "FastAPI CRUD App for performance benchmarking"
 authors = ["Rawlsy-py <christopher_m_mitchell@live.co.uk>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "thesis_python_crud" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-alembic = "^1.7.3"
-asyncpg = "^0.22.0"
-databases = "^0.4.3"
-fastapi = "^0.109.2"
-httpx = "^0.18.2"
-sqlalchemy = "^1.3.0"
-typer = "^0.4.0"
-uvicorn = "^0.15.0"
+alembic = "^1.13.2"
+asyncpg = "^0.29.0"
+databases = "^0.9.0"
+fastapi = "^0.111.0"
+httpx = "^0.27.0"
+sqlalchemy = "^2.0.31"
+typer = "^0.12.3"
+uvicorn = "^0.30.1"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.2.2"
-pytest = "^6.2.5"
-pytest-asyncio = "^0.15.1"
+ruff = "^0.5.1"
+pytest = "^8.2.2"
+pytest-asyncio = "^0.23.7"
 
 [tool.ruff]
 select = ["ALL"]

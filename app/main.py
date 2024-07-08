@@ -1,7 +1,7 @@
 # main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy import Column, Float, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -43,12 +43,12 @@ async def get_data():
 
 
 @app.post("/update-balance")
-async def update_balance(balance_info: UpdateBalance):
+async def update_balance(balance_info: UpdateBalance) -> dict:
     db = SessionLocal()
     row = db.query(MyModel).filter(MyModel.id == balance_info.id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Row not found")
-    row.balance = balance_info.balance
+    row.balance = balance_info.balance  # type: ignore
     db.commit()
     db.close()
     return {"message": "Balance updated successfully"}
