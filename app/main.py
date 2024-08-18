@@ -1,54 +1,17 @@
-# main.py
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from sqlalchemy import Column, Float, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
+from typing import List
+import models
+from database import engine, get_db
+from models import MyTable
 
-# Database setup
-SQLALCHEMY_DATABASE_URL = "postgresql://username:password@postgres:5432/database"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-
-# Model
-class MyModel(Base):
-    __tablename__ = "my_table"
-    id = Column(Integer, primary_key=True, index=True)
-    country_code = Column(String, index=True)
-    balance = Column(Float)
-
-
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-# FastAPI setup
 app = FastAPI()
 
-
-# Pydantic model for request body
-class UpdateBalance(BaseModel):
-    id: int
-    balance: float
-
-
-# Routes
+# Index Route
 @app.get("/")
-async def get_data():
-    db = SessionLocal()
-    data = db.query(MyModel).limit(10).all()
-    db.close()
-    return data
+async def index():
+    return {"message":"Server Active"}
 
 
-@app.post("/update-balance")
-async def update_balance(balance_info: UpdateBalance) -> dict:
-    db = SessionLocal()
-    row = db.query(MyModel).filter(MyModel.id == balance_info.id).first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Row not found")
-    row.balance = balance_info.balance  # type: ignore
-    db.commit()
-    db.close()
-    return {"message": "Balance updated successfully"}
