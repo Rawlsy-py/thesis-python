@@ -1,8 +1,8 @@
-import fastapi
-import uvicorn
 from typing import Union
 
-app = fastapi.FastAPI()
+from fastapi import FastAPI
+
+app = FastAPI()
 
 
 @app.get("/")
