@@ -1,4 +1,5 @@
 import fastapi
+import uvicorn
 from typing import Union
 
 app = fastapi.FastAPI()
