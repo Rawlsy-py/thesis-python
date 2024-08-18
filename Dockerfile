@@ -1,32 +1,23 @@
-# Use the official Python 3.9 image as a base
-FROM python:3.9-slim
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
 
-# Set environment variables
-ENV POETRY_VERSION=1.1.12 \
-    POETRY_VIRTUALENVS_CREATE=false \
-    PYTHONFAULTHANDLER=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONHASHSEED=random \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on
-
-# Install poetry
-RUN pip install "poetry==$POETRY_VERSION"
-
-# Copy only the poetry files
-COPY pyproject.toml poetry.lock /app/
-
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
-RUN poetry install --no-dev
+# Copy the requirements file into the container at /app
+COPY requirements.txt /app/
 
-# Copy the rest of the application code
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the current directory contents into the container at /app
 COPY . /app
 
-# Expose port 8000
-EXPOSE 8000
+# Make port 80 available to the world outside this container
+EXPOSE 80
 
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Define environment variable
+ENV PORT=80
+
+# Run the application using Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
