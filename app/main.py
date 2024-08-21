@@ -1,37 +1,29 @@
-from fastapi import FastAPI, HTTPException
-from asyncpg import create_pool, Connection
-from typing import List, Dict
-from dotenv import load_dotenv
-from contextlib import asynccontextmanager
-import os
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+
+from . import crud, models, schemas
+from .database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
-# Load environment variables from .env file
-load_dotenv()
-
-# PostgreSQL connection string from .env file
-DATABASE_URL = os.getenv("CONNECTION_STRING")
-
-
-# Create a connection pool
-async def get_db_pool():
-    pool = await create_pool(DATABASE_URL)
-    return pool
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.db_pool = await get_db_pool()
-    await app.state.db_pool.close()
-
-
-@app.get("/", response_model=List[Dict])
-async def get_users():
+# Dependency
+def get_db():
+    db = SessionLocal()
     try:
-        async with app.state.db_pool.acquire() as connection:
-            records = await connection.fetch("SELECT * FROM users")
-            return [dict(record) for record in records]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        yield db
+    finally:
+        db.close()
+
+
+@app.get("/")
+def health_check():
+    return {"Server Says": "Hello Worlds"}
+
+
+@app.get("/users/", response_model=list[schemas.User])
+def read_users(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
